@@ -13,6 +13,7 @@ RUN apk add --no-cache --virtual .build-deps bash gcc musl-dev openssl go \
     && export GOPATH=/opt/go/ \
     && export PATH=$PATH:$GOPATH/bin \
     && apk del .build-deps \
+    && cd /usr/local/xgss \
     && go build -o build/ ./...
 
 WORKDIR build/
