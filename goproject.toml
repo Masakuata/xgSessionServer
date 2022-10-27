@@ -1,5 +1,5 @@
 name = "XGSessionServer"
-version = "0.1.0"
+version = "0.2.0"
 description = "A microservice that handles user sessions and their information"
 license = "MIT"
 authors = [
