@@ -10,7 +10,7 @@ FROM scratch
 
 COPY --from=builder /go/src/xgss/xgss /opt/xgss/xgss
 
-COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 EXPOSE 42100
 
