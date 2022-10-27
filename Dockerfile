@@ -9,6 +9,8 @@ RUN apk update \
 # Fetch dependencies.
 RUN go get -u -d -v
 
+COPY . .
+
 # Go build the binary, specifying the final OS and architecture we're looking for
 RUN GOOS=linux CGO_ENABLED=1 GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/app/
 
