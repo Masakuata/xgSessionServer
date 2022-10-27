@@ -1,11 +1,19 @@
-FROM golang:1.19.2-bullseye
+FROM golang:1.19.2 AS builder
 
-WORKDIR /usr/local/xgss
+COPY . /go/src/xgss
 
-COPY . .
+WORKDIR /go/src/xgss
 
-RUN go build -o build/
+RUN go get && CGO_ENABLED=0 GOOS=linux go build .
 
-WORKDIR build/
+FROM scratch
 
-CMD [". xgss"]
+COPY --from=builder /go/src/xgss/xgss /opt/xgss/xgss
+
+COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+EXPOSE 42100
+
+WORKDIR /go/src/xgss
+
+ENTRYPOINT ["./xgss"]
