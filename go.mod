@@ -1,4 +1,4 @@
-module test
+module xgss
 
 go 1.19
 
