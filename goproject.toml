@@ -1,0 +1,10 @@
+name = "XGSessionServer"
+version = "0.1.0"
+description = "A microservice that handles user sessions and their information"
+license = "MIT"
+authors = [
+    "Edson Manuel Carballo Vera <edsonmanuelcarballovera@gmail.com>",
+]
+maintainers = [
+    "Edson Manuel Carballo Vera <edsonmanuelcarballovera@gmail.com>"
+]
