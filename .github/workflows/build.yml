@@ -16,6 +16,16 @@ jobs:
           username: ${{ secrets.EDSON_DOCKERHUB_ID }}
           password: ${{ secrets.EDSON_DOCKERHUB_TOKEN }}
 
+      - name: Configurar Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Compilar proyecto
+        run: |
+          env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 
+          go build -a -installsuffix cgo -o build/ ./...
+
       - name: Configurar QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -38,4 +48,4 @@ jobs:
           docker buildx build \
           --push \
           --tag $tag \
-          --platform linux/386,linux/amd64 .
+          --platform linux/amd64 .
