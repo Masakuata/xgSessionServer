@@ -6,6 +6,8 @@ RUN apk update \
     && apk add --update gcc musl-dev alpine-sdk \
     && update-ca-certificates
 
+WORKDIR $GOPATH
+
 # Fetch dependencies.
 RUN go get -u -d -v
 
