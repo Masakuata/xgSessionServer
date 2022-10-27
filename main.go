@@ -13,7 +13,7 @@ func main() {
 	})
 	routes.SessionRoutes(engine)
 	// Listen and Server in 0.0.0.0:8080
-	err := engine.Run(":8080")
+	err := engine.Run("0.0.0.0:42100")
 	if err != nil {
 		return
 	}
