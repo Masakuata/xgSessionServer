@@ -19,6 +19,9 @@ jobs:
       - name: Configurar QEMU
         uses: docker/setup-qemu-action@v1
 
+      - name: Configurar buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Obtener servion del servicio
         uses: SebRollen/toml-action@v1.0.0
         id: pVersion
