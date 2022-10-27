@@ -5,25 +5,18 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"time"
+	"xgss/model"
 	session2 "xgss/session"
 )
 
-type Login struct {
-	Email    string `json:"email,omitempty" validate:"required" binding:"required"`
-	Password string `json:"password,omitempty" validate:"required" binding:"required"`
-}
-
-type SessionData struct {
-	Data map[string]any `json:"data,omitempty" validate:"required" binding:"required"`
-}
-
 func SessionRoutes(group *gin.Engine) {
 	const OFFSET = len("BEARER ")
-	session := group.RouterGroup.Group("/session")
+	routerGroup := group.RouterGroup.Group("/session")
 
-	session.POST("", func(context *gin.Context) {
-		var user Login
+	routerGroup.POST("", func(context *gin.Context) {
+		var user model.User
 		err := context.ShouldBindJSON(&user)
+
 		if err != nil {
 			context.Status(http.StatusNotAcceptable)
 			return
@@ -34,6 +27,7 @@ func SessionRoutes(group *gin.Engine) {
 		token, tokenError := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"email":     user.Email,
 			"password":  user.Password,
+			"role":      user.Role,
 			"timestamp": timestamp,
 		}).SigningString()
 
@@ -44,7 +38,7 @@ func SessionRoutes(group *gin.Engine) {
 
 		if !session2.Exists(token) {
 			session2.NewSession(
-				token, user.Email, user.Password, timestamp)
+				token, user.Email, user.Password, user.Role, timestamp)
 
 			context.JSON(http.StatusCreated, gin.H{"token": token})
 		} else {
@@ -53,8 +47,8 @@ func SessionRoutes(group *gin.Engine) {
 		return
 	})
 
-	session.PATCH("", func(context *gin.Context) {
-		var data SessionData
+	routerGroup.PATCH("", func(context *gin.Context) {
+		var data model.SessionData
 
 		err := context.ShouldBindJSON(&data)
 		if err != nil {
@@ -78,7 +72,7 @@ func SessionRoutes(group *gin.Engine) {
 		return
 	})
 
-	session.GET("", func(context *gin.Context) {
+	routerGroup.GET("", func(context *gin.Context) {
 		token := context.GetHeader("Authorization")
 		if len(token) > 0 {
 			token = token[OFFSET:]
@@ -99,7 +93,7 @@ func SessionRoutes(group *gin.Engine) {
 		return
 	})
 
-	session.PUT("", func(context *gin.Context) {
+	routerGroup.PUT("", func(context *gin.Context) {
 		token := context.GetHeader("Authorization")
 		if len(token) > 0 {
 			token = token[OFFSET:]
@@ -116,7 +110,7 @@ func SessionRoutes(group *gin.Engine) {
 		return
 	})
 
-	session.DELETE("", func(context *gin.Context) {
+	routerGroup.DELETE("", func(context *gin.Context) {
 		token := context.GetHeader("Authorization")
 		if len(token) > 0 {
 			token = token[OFFSET:]

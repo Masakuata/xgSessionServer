@@ -1,26 +1,14 @@
 package session
 
 import (
-	"sync"
 	"time"
+	"xgss/model"
 )
-
-type Session struct {
-	email     string
-	password  string
-	timestamp int64
-	data      map[string]any
-}
-
-type SyncSession struct {
-	mutex    sync.Mutex
-	sessions map[string]Session
-}
 
 const LIFETIME = 600
 
-var sessionHolder = SyncSession{
-	sessions: make(map[string]Session),
+var sessionHolder = model.SyncSession{
+	Sessions: make(map[string]model.Session),
 }
 
 var isCleaning = false
@@ -28,16 +16,16 @@ var isCleaning = false
 func sessionCleaner() {
 	isCleaning = true
 
-	for len(sessionHolder.sessions) > 0 {
+	for len(sessionHolder.Sessions) > 0 {
 		now := time.Now()
 		var closerCleaning = now.Add(1 * time.Hour)
 
-		sessionHolder.mutex.Lock()
-		for token, session := range sessionHolder.sessions {
-			sessionTimestamp := time.Unix(session.timestamp, 0)
+		sessionHolder.Mutex.Lock()
+		for token, session := range sessionHolder.Sessions {
+			sessionTimestamp := time.Unix(session.Timestamp, 0)
 			auxTimestamp := sessionTimestamp.Add(LIFETIME * time.Second)
 			if auxTimestamp.Before(now) || auxTimestamp.Equal(now) {
-				delete(sessionHolder.sessions, token)
+				delete(sessionHolder.Sessions, token)
 			} else {
 				if sessionTimestamp.Before(closerCleaning) {
 					closerCleaning = sessionTimestamp
@@ -45,8 +33,8 @@ func sessionCleaner() {
 			}
 		}
 
-		sessionHolder.mutex.Unlock()
-		if len(sessionHolder.sessions) > 0 {
+		sessionHolder.Mutex.Unlock()
+		if len(sessionHolder.Sessions) > 0 {
 			now = time.Now()
 			time.Sleep(closerCleaning.Sub(now))
 		}
@@ -55,15 +43,16 @@ func sessionCleaner() {
 	isCleaning = false
 }
 
-func NewSession(token, email, password string, timestamp int64) {
-	sessionHolder.mutex.Lock()
-	sessionHolder.sessions[token] = Session{
-		email:     email,
-		password:  password,
-		timestamp: timestamp,
-		data:      map[string]any{},
+func NewSession(token, email, password, role string, timestamp int64) {
+	sessionHolder.Mutex.Lock()
+	sessionHolder.Sessions[token] = model.Session{
+		Email:     email,
+		Password:  password,
+		Role:      role,
+		Timestamp: timestamp,
+		Data:      map[string]any{},
 	}
-	sessionHolder.mutex.Unlock()
+	sessionHolder.Mutex.Unlock()
 
 	if !isCleaning {
 		go sessionCleaner()
@@ -71,48 +60,57 @@ func NewSession(token, email, password string, timestamp int64) {
 }
 
 func Exists(token string) bool {
-	sessionHolder.mutex.Lock()
+	sessionHolder.Mutex.Lock()
 
-	_, exists := sessionHolder.sessions[token]
-	defer sessionHolder.mutex.Unlock()
+	_, exists := sessionHolder.Sessions[token]
+	defer sessionHolder.Mutex.Unlock()
 	return exists
 }
 
 func AddData(token string, data map[string]any) {
-	sessionHolder.mutex.Lock()
+	sessionHolder.Mutex.Lock()
 
-	currentSession, exists := sessionHolder.sessions[token]
+	currentSession, exists := sessionHolder.Sessions[token]
 	if exists {
 		for key, value := range data {
-			currentSession.data[key] = value
+			currentSession.Data[key] = value
 		}
 	}
-	currentSession.timestamp = time.Now().Unix()
-	sessionHolder.mutex.Unlock()
+	currentSession.Timestamp = time.Now().Unix()
+	sessionHolder.Mutex.Unlock()
 }
 
 func GetData(token string) map[string]any {
-	sessionHolder.mutex.Lock()
+	sessionHolder.Mutex.Lock()
 
-	currentSession, _ := sessionHolder.sessions[token]
-	currentSession.timestamp = time.Now().Unix()
-	defer sessionHolder.mutex.Unlock()
-	return currentSession.data
+	currentSession, _ := sessionHolder.Sessions[token]
+	currentSession.Timestamp = time.Now().Unix()
+	defer sessionHolder.Mutex.Unlock()
+	return currentSession.Data
 }
 
 func UpdateLifetime(token string) {
-	sessionHolder.mutex.Lock()
+	sessionHolder.Mutex.Lock()
 
-	currentSession, exists := sessionHolder.sessions[token]
+	currentSession, exists := sessionHolder.Sessions[token]
 	if exists {
-		currentSession.timestamp = time.Now().Unix()
+		currentSession.Timestamp = time.Now().Unix()
 	}
-	sessionHolder.mutex.Unlock()
+	sessionHolder.Mutex.Unlock()
+}
+
+func IsRole(token, role string) bool {
+	sessionHolder.Mutex.Lock()
+
+	currentSession, exists := sessionHolder.Sessions[token]
+
+	defer sessionHolder.Mutex.Unlock()
+	return exists && currentSession.Role == role
 }
 
 func Delete(token string) {
-	sessionHolder.mutex.Lock()
+	sessionHolder.Mutex.Lock()
 
-	delete(sessionHolder.sessions, token)
-	sessionHolder.mutex.Unlock()
+	delete(sessionHolder.Sessions, token)
+	sessionHolder.Mutex.Unlock()
 }
