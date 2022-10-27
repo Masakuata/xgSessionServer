@@ -4,7 +4,7 @@ COPY . /go/src/xgss
 
 WORKDIR /go/src/xgss
 
-RUN go get && CGO_ENABLED=0 GOOS=linux go build .
+RUN go get && CGO_ENABLED=0 GOOS=linux go build -o xgss .
 
 FROM scratch
 
