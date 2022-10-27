@@ -14,6 +14,6 @@ COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.
 
 EXPOSE 42100
 
-WORKDIR /go/src/xgss
+WORKDIR /opt/xgss
 
 ENTRYPOINT ["./xgss"]
