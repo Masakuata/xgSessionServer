@@ -1,5 +1,6 @@
 name = "XGSessionServer"
 version = "0.3.0"
+imageName = "xg_session_server"
 description = "A microservice that handles user sessions and their information"
 license = "MIT"
 authors = [

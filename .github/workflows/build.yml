@@ -39,11 +39,19 @@ jobs:
           file: 'goproject.toml'
           field: 'version'
 
+      - name: Obtener nombre de la imagen de Docker
+        uses: SebRollen/toml-action@v1.0.0
+        id: pImageName
+        with:
+          file: 'goproject.toml'
+          field: "imageName"
+
       - name: Construir imagen
         env:
           tag: ${{ steps.pVersion.outputs.value }}
+          image_name: ${{ steps.pImageName.outputs.value }}
         run: |
-          image="w3edd/xg_session_server"
+          image="w3edd/$image_name"
           tag=$image:$tag
           docker buildx build \
           --push \
